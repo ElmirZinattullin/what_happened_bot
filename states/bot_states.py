@@ -1,7 +1,7 @@
 from telebot.handler_backends import State, StatesGroup
 
 
-class MyStates(StatesGroup):
+class WhatHappenedStates(StatesGroup):
     main_menu = State()
     faq_menu = State()
     new_question_input = State()
