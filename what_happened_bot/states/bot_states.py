@@ -13,10 +13,3 @@ class WhatHappenedStates(StatesGroup):
     picture_input = State()
     phone_number_send_menu = State()
     phone_number_send_request = State()
-
-
-
-
-    # clinic_address_city_block_menu = State()
-    # clinic_address_city_block_street_menu = State()
-    # clinic_address_clinic_name_menu = State()

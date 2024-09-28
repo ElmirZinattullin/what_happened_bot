@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.relpath("."))
+
 from loader import get_bot
 from handlers.bot_handlers import set_handlers
 from telebot.custom_filters import StateFilter

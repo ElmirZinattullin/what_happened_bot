@@ -1,5 +1,4 @@
-import os
-from dotenv import find_dotenv, load_dotenv, set_key, get_key, dotenv_values
+from dotenv import set_key, get_key, dotenv_values
 
 settings_path = "settings.txt"
 settings = dotenv_values(settings_path)

@@ -2,7 +2,7 @@ from typing import Dict
 
 from telebot import TeleBot
 
-from telebot.types import Message, CallbackQuery, PhotoSize
+from telebot.types import Message, PhotoSize
 
 from keyborads import keyboards, buttons
 from states.bot_states import WhatHappenedStates

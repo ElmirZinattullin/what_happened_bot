@@ -1,8 +1,4 @@
-from operator import length_hint
-from typing import Dict, Union
-
-from telebot.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 from . import buttons as btn
 from templates.qeustions import QUESTIONS
