@@ -11,15 +11,16 @@ def change_state(bot, message: Message, new_state:State, sending_message:str, ke
     bot.set_state(message.from_user.id, state=new_state)
 
 
-def send_users_question(bot: TeleBot, message:Message):
+def send_users_question(bot: TeleBot, question_text, contact:Optional[Contact] = None):
     from settings.settings import SUPPORT_CHAT_ID
     if not SUPPORT_CHAT_ID:
         return
     support_chat_id = SUPPORT_CHAT_ID
-    bot.send_message(support_chat_id, QUESTION.format(question=message.text))
+    bot.send_message(support_chat_id, QUESTION.format(question=question_text))
+    send_contact(bot, contact, support_chat_id)
 
 
-def send_users_feedback(bot: TeleBot, params:dict, contact:Optional[Contact] = None, ):
+def send_users_feedback(bot: TeleBot, params:dict, contact:Optional[Contact] = None):
     from settings.settings import SUPPORT_CHAT_ID
     if not SUPPORT_CHAT_ID:
         return
