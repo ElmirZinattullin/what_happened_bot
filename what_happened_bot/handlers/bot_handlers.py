@@ -206,14 +206,16 @@ def faq_menu_handlers(bot):
         chat_types=["private"]
     )
     def input_user_question(message: Message):
-        send_message = msg.YOUR_QUESTION_END
-        send_users_question(bot, message)
+        send_message = msg.SEND_QUESTION_NUMBER + 2*"\n" + msg.INDIVIDUAL_DATA_NOTIFICATION
+        with bot.retrieve_data(message.from_user.id) as data:
+            data["user_question"] = message.text
+        # send_users_question(bot, message)
         change_state(
             bot=bot,
             message=message,
-            new_state=WhatHappenedStates.faq_menu,
+            new_state=WhatHappenedStates.phone_number_send_menu,
             sending_message=send_message,
-            keyboard=keyboards.FAQ
+            keyboard=keyboards.SEND_NUMBER
         )
 
 
@@ -393,7 +395,7 @@ def send_photo_menu_handler(bot):
         chat_types=["private"]
     )
     def send_feedback(message: Message):
-        send_message = msg.SEND_NUMBER
+        send_message = msg.SEND_NUMBER + 2*"\n" + msg.INDIVIDUAL_DATA_NOTIFICATION
         change_state(
             bot=bot,
             message=message,
@@ -460,10 +462,10 @@ def send_number_menu_handler(bot):
         chat_types=["private"]
     )
     def go_to_main_menu(message: Message):
-
+        """
+        Возврат в меню без отправки сообщения в тех.поддержку
+        """
         send_message = msg.BACK_TO_MAIN_MENU
-        params = get_params(message)
-        send_users_feedback(bot, params)
 
         change_state(
             bot=bot,
@@ -479,10 +481,18 @@ def send_number_menu_handler(bot):
         content_types=['contact']
     )
     def go_to_phone_number_request(message: Message):
-        send_message = msg.BACK_TO_MAIN_MENU
+
         contact = message.contact
-        params = get_params(message)
-        send_users_feedback(bot, params, contact)
+        send_message = msg.BACK_TO_MAIN_MENU
+
+        with bot.retrieve_data(message.from_user.id) as data:
+            question = data.get("user_question")
+
+        if question is not None:
+            send_users_question(bot, question, contact)
+        else:
+            params = get_params(message)
+            send_users_feedback(bot, params, contact)
 
         change_state(
             bot=bot,
