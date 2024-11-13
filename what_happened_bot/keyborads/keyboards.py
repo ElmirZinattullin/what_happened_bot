@@ -70,7 +70,7 @@ def faq_keyboard(faq_dict: dict, rows_width: int) -> Keyboard:
         if i <= faq_len:
             buttons.append(str(i))
         else:
-            buttons.append("")
+            buttons.append(btn.NULL)
     keyboard.add(*buttons, row_width=rows_width)
     keyboard.add(btn.ASK_YOUR_QUESTION, row_width=1)
     add_back_button(keyboard)
@@ -95,6 +95,8 @@ def send_number_keyboard() -> Keyboard:
 
 
 class AddressKeyboard:
+
+    address_row = 2
 
     class AddressKeyboardException(Exception):
         pass
@@ -130,15 +132,21 @@ class AddressKeyboard:
     def get_keyboard(self, *args):
         is_end = False
         default_buttons = [btn.BACK, btn.TO_MAIN_MENU]
+        keyboard = Keyboard(resize_keyboard=True, row_width=self.address_row)
+
         addresses = self.get_in_deep(self.map, *args)
-        buttons = default_buttons
+        buttons = []
         if isinstance(addresses, str):
             is_end = True
             return addresses, is_end
         else:
             buttons += addresses
-            keyboard = Keyboard(row_width=1, resize_keyboard=True)
-            keyboard.add(*buttons)
+            complement = self.address_row - len(buttons) % self.address_row if len(buttons) % self.address_row else 0
+            for _ in range(complement):
+                buttons.append(btn.NULL)
+            keyboard.add(*buttons, row_width=2)
+            for button in default_buttons:
+                keyboard.add(button, row_width=1)
             return keyboard, is_end
 
 
@@ -156,7 +164,8 @@ class AddressKeyboard:
 
 
 
-FAQ = faq_keyboard(QUESTIONS, rows_width=5)
+FAQ_ROWS = 5
+FAQ = faq_keyboard(QUESTIONS, rows_width=FAQ_ROWS)
 MAIN_MENU = main_menu_keyboard()
 COMPLAINTS_AND_SUGGESTIONS = complaints_and_suggestions_menu_keyboard()
 ADDRESS_KEYBOARD_OBJ = AddressKeyboard(ADDRESS)
