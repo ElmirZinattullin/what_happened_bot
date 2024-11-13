@@ -119,20 +119,41 @@ class AddressKeyboard:
             if result is None:
                 raise AddressKeyboard.AddressKeyboardKeyError(f"Couldn't get key='{args[0]}' on {one_map.keys()}")
             if isinstance(result, dict):
-                return list(result.keys())
+                address_level = AddressKeyboard.check_in_deep(result)
+                if isinstance(address_level, dict):
+                    return list(address_level.keys())
+                else:
+                    return address_level
             else:
-                return result.copy()
+                return result
 
     def get_keyboard(self, *args):
+        is_end = False
         default_buttons = [btn.BACK, btn.TO_MAIN_MENU]
-        buttons = self.get_in_deep(self.map, *args)
-        if buttons:
-            buttons += default_buttons
+        addresses = self.get_in_deep(self.map, *args)
+        buttons = default_buttons
+        if isinstance(addresses, str):
+            is_end = True
+            return addresses, is_end
         else:
-            buttons = default_buttons
-        keyboard = Keyboard(row_width=1, resize_keyboard=True)
-        keyboard.add(*buttons)
-        return keyboard
+            buttons += addresses
+            keyboard = Keyboard(row_width=1, resize_keyboard=True)
+            keyboard.add(*buttons)
+            return keyboard, is_end
+
+
+    @staticmethod
+    def check_in_deep(address_dict: dict):
+        """Просматривает словарь в глубину возвращает название клиники если нет других вариантов по текущему адресу или возвращает словарь с адресами на уровне выбора"""
+        if len(address_dict) == 1:
+            next_address = next(iter(address_dict.values()))
+            if isinstance(next_address, dict):
+                return AddressKeyboard.check_in_deep(next_address)
+            else:
+                return next_address
+        else:
+            return address_dict
+
 
 
 FAQ = faq_keyboard(QUESTIONS, rows_width=5)
@@ -143,17 +164,17 @@ DEFAULT = default_keyboard()
 SEND_PHOTO = yes_or_no_keyboard()
 SEND_NUMBER = send_number_keyboard()
 
-if __name__ == '__main__':
-    addres = {
-        "Tatarstan": {
-            "Kazan": {
-                "Svoboda": ["sv_perv_bolnica", "sv_vtoraya_bolnica"],
-                "Kremlevsaya": ["kreml 1", "kreml 2"],
-            },
-            "Elabuga": {
-                "Prolet": ["elbuj perv bolnica"]
-            }
-        }
-    }
-    res = AddressKeyboard(one_map=addres).get_keyboard("Tatarstan", "Kazan", "Svoboda", "sv_perv_bolnica").buttons
-    print(res)
+# if __name__ == '__main__':
+#     addres = {
+#         "Tatarstan": {
+#             "Kazan": {
+#                 "Svoboda": ["sv_perv_bolnica", "sv_vtoraya_bolnica"],
+#                 "Kremlevsaya": ["kreml 1", "kreml 2"],
+#             },
+#             "Elabuga": {
+#                 "Prolet": ["elbuj perv bolnica"]
+#             }
+#         }
+#     }
+#     res, is_end = AddressKeyboard(one_map=addres).get_keyboard("Tatarstan", "Kazan", "Svoboda", "sv_perv_bolnica").buttons
+#     print(res)

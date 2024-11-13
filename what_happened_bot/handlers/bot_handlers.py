@@ -121,7 +121,7 @@ def complaints_and_suggestions_menu_handlers(bot):
                 data["feedback_type"] = "complain"
             else:
                 data["feedback_type"] = "feedback"
-        keyboard = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard()
+        keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard()
         bot.set_state(message.from_user.id, state=WhatHappenedStates.clinic_address_choosing)
         change_state(
             bot=bot,
@@ -224,6 +224,21 @@ def address_input_handler(bot: TeleBot):
 
     @bot.message_handler(
         state=state,
+        regexp=buttons.TO_MAIN_MENU,
+        chat_types=["private"]
+    )
+    def get_feedback(message: Message):
+        bot.reset_data(message.from_user.id)
+        change_state(
+            bot=bot,
+            message=message,
+            new_state=WhatHappenedStates.main_menu,
+            sending_message=msg.BACK_TO_MAIN_MENU,
+            keyboard=keyboards.MAIN_MENU
+        )
+
+    @bot.message_handler(
+        state=state,
         chat_types=["private"],
         regexp=buttons.BACK
     )
@@ -242,7 +257,7 @@ def address_input_handler(bot: TeleBot):
             )
             return
         address_args = address_args[:-1]
-        keyboard = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
+        keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
         address = "%%".join(address_args)
         with bot.retrieve_data(message.from_user.id) as data:
             data["address"] = address
@@ -267,10 +282,11 @@ def address_input_handler(bot: TeleBot):
         else:
             address_args = []
         try:
-            prev_keyboard_buttons = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args).buttons
+            keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
+            prev_keyboard_buttons = keyboard.buttons
         except keyboards.AddressKeyboard.AddressKeyboardKeyError:
             send_message = msg.CHOOSING_ADDRESS
-            keyboard = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard()
+            keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard()
             bot.set_state(message.from_user.id, state=WhatHappenedStates.clinic_address_choosing)
             change_state(
                 bot=bot,
@@ -287,16 +303,16 @@ def address_input_handler(bot: TeleBot):
                     data["address"] = address
                 send_message ="Вводимый адрес:" + " > ".join(address_args)
                 try:
-                    keyboard = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
+                    keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
                 except keyboards.AddressKeyboard.AddressKeyboardKeyError:
                     return
-                except keyboards.AddressKeyboard.AddressKeyboardException:
+                if is_end:
                     with bot.retrieve_data(message.from_user.id) as data:
                         feedback_type = data.get("feedback_type")
                     if feedback_type == "complain":
-                        send_message = msg.COMPLAINT.format(clinic=message.text)
+                        send_message = msg.COMPLAINT.format(clinic=keyboard)
                     else:
-                        send_message = msg.FEEDBACK.format(clinic=message.text)
+                        send_message = msg.FEEDBACK.format(clinic=keyboard)
                     change_state(
                         bot=bot,
                         message=message,
@@ -305,6 +321,7 @@ def address_input_handler(bot: TeleBot):
                         keyboard=keyboards.DEFAULT
                     )
                 else:
+                    send_message = "Вводимый адрес:" + " > ".join(address_args)
                     change_state(
                         bot=bot,
                         message=message,
@@ -312,6 +329,14 @@ def address_input_handler(bot: TeleBot):
                         sending_message=send_message,
                         keyboard=keyboard
                     )
+            else:
+                send_message = "Пожалуйста выберите из предложенных вариантов"
+                change_state(
+                    bot=bot,
+                    message=message,
+                    new_state=WhatHappenedStates.clinic_address_choosing,
+                    sending_message=send_message,
+                )
 
 
 
@@ -325,7 +350,7 @@ def feed_back_input_handler(bot:TeleBot):
         regexp=buttons.BACK,
         chat_types=["private"]
     )
-    def get_feedback(message: Message):
+    def back_to_address(message: Message):
         with bot.retrieve_data(message.from_user.id) as data:
             address = data.get("address")
         if address:
@@ -340,7 +365,7 @@ def feed_back_input_handler(bot:TeleBot):
             )
             return
         address_args = address_args[:-1]
-        keyboard = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
+        keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
         address = "%%".join(address_args)
         with bot.retrieve_data(message.from_user.id) as data:
             data["address"] = address
