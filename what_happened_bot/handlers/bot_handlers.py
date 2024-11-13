@@ -182,6 +182,20 @@ def faq_menu_handlers(bot):
             sending_message=send_message,
         )
 
+    @bot.message_handler(
+        state=state,
+        func=lambda message: message.text == buttons.NULL,
+        chat_types=["private"]
+    )
+    def push_null_button(message: Message):
+        send_message = msg.PUSH_NULL_BUTTON
+        change_state(
+            bot=bot,
+            message=message,
+            new_state=WhatHappenedStates.faq_menu,
+            sending_message=send_message,
+            keyboard=keyboards.FAQ
+        )
 
     @bot.message_handler(
         state=state,
@@ -272,6 +286,42 @@ def address_input_handler(bot: TeleBot):
 
     @bot.message_handler(
         state=state,
+        func=lambda message: message.text == buttons.NULL,
+        chat_types=["private"]
+    )
+    def push_null_button(message: Message):
+        send_message = msg.PUSH_NULL_BUTTON
+        with bot.retrieve_data(message.from_user.id) as data:
+            address = data.get("address")
+        if address:
+            address_args = address.split("%%")
+        else:
+            address_args = []
+        try:
+            keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard(*address_args)
+            prev_keyboard_buttons = keyboard.buttons
+        except keyboards.AddressKeyboard.AddressKeyboardKeyError:
+            send_message = msg.CHOOSING_ADDRESS
+            keyboard, is_end = keyboards.ADDRESS_KEYBOARD_OBJ.get_keyboard()
+            bot.set_state(message.from_user.id, state=WhatHappenedStates.clinic_address_choosing)
+            change_state(
+                bot=bot,
+                message=message,
+                new_state=WhatHappenedStates.clinic_address_choosing,
+                sending_message=send_message,
+                keyboard=keyboard
+            )
+        else:
+            change_state(
+                bot=bot,
+                message=message,
+                new_state=WhatHappenedStates.clinic_address_choosing,
+                sending_message=send_message,
+                keyboard=keyboard
+            )
+
+    @bot.message_handler(
+        state=state,
         chat_types=["private"]
     )
     def choosing_address_menu(message: Message):
@@ -296,7 +346,7 @@ def address_input_handler(bot: TeleBot):
                 keyboard=keyboard
             )
         else:
-            if message.text in prev_keyboard_buttons:
+            if message.text in prev_keyboard_buttons and message.text != buttons.NULL:
                 address_args.append(message.text)
                 with bot.retrieve_data(message.from_user.id) as data:
                     address = "%%".join(address_args)
@@ -336,6 +386,7 @@ def address_input_handler(bot: TeleBot):
                     message=message,
                     new_state=WhatHappenedStates.clinic_address_choosing,
                     sending_message=send_message,
+                    keyboard=keyboard
                 )
 
 
