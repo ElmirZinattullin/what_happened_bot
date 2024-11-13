@@ -96,7 +96,7 @@ def send_number_keyboard() -> Keyboard:
 
 class AddressKeyboard:
 
-    address_row = 3
+    address_row = 2
 
     class AddressKeyboardException(Exception):
         pass
