@@ -4,13 +4,28 @@ from telebot import State, TeleBot
 from telebot.types import ReplyKeyboardMarkup, Message, Contact
 
 from templates.suuport_chat_message import QUESTION, FEEDBACK
+from telebot.apihelper import ApiException, ApiTelegramException, ApiHTTPException, ApiInvalidJSONException
+
+ERRORS = ApiException, ApiTelegramException, ApiHTTPException, ApiInvalidJSONException
+
+def exception_decorator(exceptions: tuple):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                func(*args, **kwargs)
+            except exceptions as e:
+                print(f"Exception while func {func.__name__}, Exception: {e}")
+        return wrapper
+    return decorator
 
 
+@exception_decorator(ERRORS)
 def change_state(bot, message: Message, new_state:State, sending_message:str, keyboard:Optional[ReplyKeyboardMarkup]=None):
     bot.send_message(message.chat.id, sending_message, reply_markup=keyboard)
     bot.set_state(message.from_user.id, state=new_state)
 
 
+@exception_decorator(ERRORS)
 def send_users_question(bot: TeleBot, question_text, contact:Optional[Contact] = None):
     from settings.settings import SUPPORT_CHAT_ID
     if not SUPPORT_CHAT_ID:
@@ -20,6 +35,7 @@ def send_users_question(bot: TeleBot, question_text, contact:Optional[Contact] =
     send_contact(bot, contact, support_chat_id)
 
 
+@exception_decorator(ERRORS)
 def send_users_feedback(bot: TeleBot, params:dict, contact:Optional[Contact] = None):
     from settings.settings import SUPPORT_CHAT_ID
     if not SUPPORT_CHAT_ID:
@@ -41,10 +57,13 @@ def send_users_feedback(bot: TeleBot, params:dict, contact:Optional[Contact] = N
     if params.get("photo_ids"):
         send_photo_by_id(bot, params.get("photo_ids"), support_chat_id)
 
+@exception_decorator(ERRORS)
 def send_photo_by_id(bot: TeleBot, photo_ids:List[str], support_chat_id:int):
     for photo_id in photo_ids:
         bot.send_photo(support_chat_id, photo_id, caption="Фото к отзыву")
 
+
+@exception_decorator(ERRORS)
 def send_contact(bot: TeleBot, contact:Optional[Contact], support_chat_id:int):
     if contact:
         bot.send_contact(
@@ -54,3 +73,4 @@ def send_contact(bot: TeleBot, contact:Optional[Contact], support_chat_id:int):
             last_name=contact.last_name,
             vcard=contact.vcard
         )
+

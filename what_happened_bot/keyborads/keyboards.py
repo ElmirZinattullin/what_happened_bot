@@ -96,7 +96,7 @@ def send_number_keyboard() -> Keyboard:
 
 class AddressKeyboard:
 
-    address_row = 2
+    address_row = 3
 
     class AddressKeyboardException(Exception):
         pass
@@ -172,18 +172,3 @@ ADDRESS_KEYBOARD_OBJ = AddressKeyboard(ADDRESS)
 DEFAULT = default_keyboard()
 SEND_PHOTO = yes_or_no_keyboard()
 SEND_NUMBER = send_number_keyboard()
-
-# if __name__ == '__main__':
-#     addres = {
-#         "Tatarstan": {
-#             "Kazan": {
-#                 "Svoboda": ["sv_perv_bolnica", "sv_vtoraya_bolnica"],
-#                 "Kremlevsaya": ["kreml 1", "kreml 2"],
-#             },
-#             "Elabuga": {
-#                 "Prolet": ["elbuj perv bolnica"]
-#             }
-#         }
-#     }
-#     res, is_end = AddressKeyboard(one_map=addres).get_keyboard("Tatarstan", "Kazan", "Svoboda", "sv_perv_bolnica").buttons
-#     print(res)
