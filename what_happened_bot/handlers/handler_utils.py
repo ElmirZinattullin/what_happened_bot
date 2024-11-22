@@ -1,4 +1,5 @@
 from typing import Optional, List
+import logging
 
 from telebot import State, TeleBot
 from telebot.types import ReplyKeyboardMarkup, Message, Contact
@@ -14,7 +15,7 @@ def exception_decorator(exceptions: tuple):
             try:
                 func(*args, **kwargs)
             except exceptions as e:
-                print(f"Exception while func {func.__name__}, Exception: {e}")
+                logging.error(f"Exception while func {func.__name__}, Exception: {e}")
         return wrapper
     return decorator
 
